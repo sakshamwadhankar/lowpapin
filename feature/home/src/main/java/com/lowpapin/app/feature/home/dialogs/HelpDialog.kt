@@ -1,0 +1,340 @@
+/*
+ * Copyright (C) 2026 Lowpapin
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package com.lowpapin.app.feature.home.dialogs
+
+import android.content.Intent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
+import com.lowpapin.app.designsystem.component.AutoResizingText
+import com.lowpapin.app.designsystem.component.LowpapinCard
+import com.lowpapin.app.designsystem.icon.LowpapinIcons
+import com.lowpapin.app.designsystem.theme.LowpapinTheme
+import com.lowpapin.app.designsystem.theme.spacing
+import com.lowpapin.app.designsystem.tooling.DevicePreviews
+import com.lowpapin.app.feature.home.R
+import com.lowpapin.app.feature.home.openActivityAccessibilitySettings
+import timber.log.Timber
+
+@Composable
+fun HelpDialog(onDismiss: () -> Unit) {
+    LaunchedEffect(Unit) {
+        Timber.d("HelpDialog: show")
+    }
+    Dialog(
+        onDismissRequest = {
+            Timber.d("HelpDialog: dismiss request")
+            onDismiss()
+        },
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        HelpDialogContent(onDismiss = onDismiss)
+    }
+}
+
+@Composable
+private fun HelpDialogContent(onDismiss: () -> Unit) {
+    LowpapinCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(MaterialTheme.spacing.large),
+        containerColor = MaterialTheme.colorScheme.background,
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(MaterialTheme.spacing.extraLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Header
+            AutoResizingText(
+                text = stringResource(R.string.help_dialog_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                minFontSize = 14.sp,
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+            // Step 1
+            HelpStep(
+                stepNumber = "1",
+                title = stringResource(R.string.help_step1_title),
+                description = stringResource(R.string.help_step1_description),
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            // Step 2
+            HelpStep(
+                stepNumber = "2",
+                title = stringResource(R.string.help_step2_title),
+                description = stringResource(R.string.help_step2_description),
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            // Step 3
+            HelpStep(
+                stepNumber = "3",
+                title = stringResource(R.string.help_step3_title),
+                description = stringResource(R.string.help_step3_description),
+            )
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+
+            // GitHub Card
+            GitHubCard()
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+
+            // Action Buttons
+            val context = LocalContext.current
+
+            Button(
+                onClick = {
+                    try {
+                        Timber.i("HelpDialog: open accessibility settings")
+                        context.openActivityAccessibilitySettings()
+                        onDismiss()
+                    } catch (e: Exception) {
+                        Timber.e(e, "HelpDialog: failed to open accessibility settings")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(id = LowpapinIcons.Settings),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    AutoResizingText(
+                        text = stringResource(R.string.go_to_accessibility_settings),
+                        modifier = Modifier.weight(1f, fill = false),
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        minFontSize = 10.sp,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+            OutlinedButton(
+                onClick = {
+                    Timber.d("HelpDialog: close clicked")
+                    onDismiss()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        painter = painterResource(id = LowpapinIcons.Close),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                    AutoResizingText(
+                        text = stringResource(R.string.close),
+                        modifier = Modifier.weight(1f, fill = false),
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        minFontSize = 10.sp,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Suppress("FunctionNaming")
+@Composable
+private fun HelpStep(stepNumber: String, title: String, description: String) {
+    LowpapinCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.medium),
+            verticalAlignment = Alignment.Top,
+        ) {
+            // Step Number Circle
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        shape = CircleShape,
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stepNumber,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+            }
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
+
+            // Step Content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
+
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+}
+
+@Suppress("FunctionNaming")
+@Composable
+private fun GitHubCard() {
+    val context = LocalContext.current
+    val githubUrl = stringResource(R.string.github_url)
+
+    LowpapinCard(
+        onClick = {
+            try {
+                Timber.i("HelpDialog: open GitHub link")
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = githubUrl.toUri()
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Timber.e(e, "HelpDialog: failed to open GitHub link")
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(MaterialTheme.spacing.small),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_github),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Text(
+                text = stringResource(R.string.visit_github),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = MaterialTheme.spacing.small),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+            )
+
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.extraLarge))
+        }
+    }
+}
+
+@DevicePreviews
+@Composable
+fun HelpDialogPreview() {
+    LowpapinTheme {
+        HelpDialogContent(onDismiss = {})
+    }
+}
