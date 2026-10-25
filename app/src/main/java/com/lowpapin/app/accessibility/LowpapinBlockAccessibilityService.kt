@@ -36,6 +36,7 @@ import com.lowpapin.app.core.repository.BlockingConfigRepository
 import com.lowpapin.app.core.repository.SessionTracker
 import com.lowpapin.app.core.repository.UserSettingsStore
 import com.lowpapin.app.debug.DebugOverlayConfig
+import com.lowpapin.app.intention.SessionIntentionManager
 import com.lowpapin.app.ui.overlay.BlockedContentOverlayManager
 import com.lowpapin.app.ui.overlay.TimerOverlayManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -132,6 +133,10 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var blockedContentOverlayManager: BlockedContentOverlayManager
 
+    /** Runs the intention layer: intention capture, overrun detection, and exit prompts. */
+    @Inject
+    lateinit var sessionIntentionManager: SessionIntentionManager
+
     private val powerManager by lazy { getSystemService(POWER_SERVICE) as PowerManager }
 
     /** Currently active content session, including viewing state and any attached cover. */
@@ -210,6 +215,9 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         } else {
             Timber.v("Periodic check running: elapsed=%d ms", elapsed)
             serviceScope.launch {
+                // The intention layer runs alongside configured blocking modes: it never blocks,
+                // it offers exit prompts when usage diverges from the declared intention.
+                sessionIntentionManager.evaluateOverrun(session.app.app)
                 val action = blockingManager.onPeriodicCheck(elapsed)
                 if (viewingSession !== session) return@launch
                 when (action) {
@@ -408,6 +416,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         if (previousApp != null) {
             Timber.v("*** User appears to have left a brain rot app: %s (%s)", previousApp.app.name, previousApp.packageId)
             sessionTracker.onAppClose()
+            sessionIntentionManager.onTrackedAppClosed()
             // When exiting to an unmonitored screen (e.g. launcher or home), reset the saved activity
             if (nextApp == null && currentActivity?.packageName == previousApp.packageId) {
                 currentActivity = null
@@ -417,6 +426,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         if (nextApp != null) {
             Timber.v("**** User appears to have entered a brain rot app: %s (%s)", nextApp.app.name, nextApp.packageId)
             sessionTracker.onAppOpen(nextApp.app)
+            sessionIntentionManager.onTrackedAppOpened(nextApp.app)
         }
 
         currentForegroundBrainRotApp = nextApp
@@ -461,6 +471,8 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         }
 
         contentSession = ContentSession(detectedContent, System.currentTimeMillis())
+        // A new video starting is a natural stopping point for an overrunning session.
+        sessionIntentionManager.onContentSessionStarted(detectedContent.app.app)
         onBlockedContentEntered()
     }
 
@@ -578,6 +590,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     private suspend fun saveViewing(finished: FinishedViewing) {
         if (finished.durationMillis >= MIN_TRACKED_DURATION_MILLIS) {
             sessionTracker.addToDailyUsage(finished.durationMillis, finished.app.app)
+            sessionIntentionManager.onUsageRecorded(finished.durationMillis, finished.app.app)
             blockingManager.onExitBlockedContent(finished.startedAtMillis, finished.endedAtMillis)
         } else {
             // Sub-second duration (such as content immediately blocked on enter) does not count as viewed content.
@@ -601,6 +614,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     /** Enforces the active blocking policy by attaching a cover overlay or performing Back navigation. */
     private suspend fun enforceBlocking(session: ContentSession) {
         if (viewingSession !== session || isBlockingSuppressed) return
+        sessionIntentionManager.onHardBlock(session.app.app)
         when (val action = session.content.blockAction) {
             is ContentBlockAction.PerformGlobalAction -> performGlobalAction(action.action)
 

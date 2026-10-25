@@ -21,8 +21,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.lowpapin.app.core.data.database.dao.InterventionEventDao
+import com.lowpapin.app.core.data.database.dao.SessionIntentDao
 import com.lowpapin.app.core.data.database.dao.SessionSegmentDao
 import com.lowpapin.app.core.data.database.dao.UserSettingsDao
+import com.lowpapin.app.core.data.database.model.InterventionEventEntity
+import com.lowpapin.app.core.data.database.model.SessionIntentEntity
 import com.lowpapin.app.core.data.database.model.SessionSegmentEntity
 import com.lowpapin.app.core.data.database.model.UserSettingsEntity
 
@@ -33,8 +37,10 @@ import com.lowpapin.app.core.data.database.model.UserSettingsEntity
     entities = [
         UserSettingsEntity::class,
         SessionSegmentEntity::class,
+        SessionIntentEntity::class,
+        InterventionEventEntity::class,
     ],
-    version = 12,
+    version = 13,
     exportSchema = false,
 )
 @TypeConverters(LocalDateTypeConverters::class, BlockableAppTypeConverters::class, LocalDateTimeTypeConverters::class)
@@ -42,6 +48,10 @@ abstract class LowpapinDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
 
     abstract fun sessionSegmentDao(): SessionSegmentDao
+
+    abstract fun sessionIntentDao(): SessionIntentDao
+
+    abstract fun interventionEventDao(): InterventionEventDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -319,6 +329,58 @@ abstract class LowpapinDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE user_settings ADD COLUMN theme_mode TEXT NOT NULL DEFAULT 'SYSTEM'")
                 db.execSQL("ALTER TABLE user_settings ADD COLUMN dynamic_color_enabled INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
+        /**
+         * Adds the intention layer: declared session intentions, the intervention event log,
+         * and the user's own daily-usage goal used for outcome measurement.
+         */
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS session_intents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        purpose TEXT NOT NULL,
+                        intendedDurationMillis INTEGER NOT NULL,
+                        startedAtMillis INTEGER NOT NULL,
+                        endedAtMillis INTEGER NOT NULL DEFAULT 0,
+                        status TEXT NOT NULL DEFAULT 'ACTIVE',
+                        actualTrackedMillis INTEGER NOT NULL DEFAULT 0,
+                        promptCount INTEGER NOT NULL DEFAULT 0,
+                        keepWatchingCount INTEGER NOT NULL DEFAULT 0,
+                        extensionCount INTEGER NOT NULL DEFAULT 0,
+                        variant TEXT NOT NULL
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_session_intents_status ON session_intents (status)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_session_intents_startedAtMillis ON session_intents (startedAtMillis)",
+                )
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS intervention_events (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        timestampMillis INTEGER NOT NULL,
+                        type TEXT NOT NULL,
+                        app TEXT,
+                        intentId INTEGER,
+                        detail TEXT
+                    )
+                    """.trimIndent(),
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_intervention_events_type_timestampMillis " +
+                        "ON intervention_events (type, timestampMillis)",
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_intervention_events_intentId ON intervention_events (intentId)",
+                )
+                db.execSQL("ALTER TABLE user_settings ADD COLUMN daily_goal_millis INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

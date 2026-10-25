@@ -48,6 +48,9 @@ sealed interface LowpapinRoute : NavKey {
 
     @Serializable
     data object Settings : LowpapinRoute
+
+    @Serializable
+    data object Outcomes : LowpapinRoute
 }
 
 @Composable
@@ -60,6 +63,12 @@ class LowpapinAppState(val backStack: NavBackStack<NavKey>) {
     fun navigateToSettings() {
         if (backStack.lastOrNull() != LowpapinRoute.Settings) {
             backStack.add(LowpapinRoute.Settings)
+        }
+    }
+
+    fun navigateToOutcomes() {
+        if (backStack.lastOrNull() != LowpapinRoute.Outcomes) {
+            backStack.add(LowpapinRoute.Outcomes)
         }
     }
 

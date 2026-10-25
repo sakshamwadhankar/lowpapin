@@ -21,4 +21,63 @@
     <string name="timer_default_value" translatable="false">00:00</string>
     <string name="tiktok_blocked_title">TikTok videos are blocked</string>
     <string name="tiktok_blocked_description">Use the tabs below to open Inbox or Profile.</string>
+
+    <!-- Intervention notification channel -->
+    <string name="channel_intentions_name">Session intentions</string>
+
+    <!-- Intention capture -->
+    <string name="intention_request_title">What are you here for?</string>
+    <string name="intention_request_body">Declare your intention before using %1$s.</string>
+    <string name="intention_capture_title">What are you here for?</string>
+    <string name="intention_capture_subtitle">Name your purpose and how long you plan to stay — Lowpapin will help you stick to it without blocking you.</string>
+    <string name="intention_purpose_heading">Purpose</string>
+    <string name="intention_duration_heading">How long do you plan to stay?</string>
+    <string name="intention_start_session">Start session</string>
+    <string name="intention_not_now">Not now</string>
+    <string name="purpose_communicate">Check messages</string>
+    <string name="purpose_learn">Learn something</string>
+    <string name="purpose_entertain">Deliberate entertainment</string>
+    <string name="purpose_create">Post or update</string>
+    <string name="purpose_other">Something else</string>
+
+    <!-- Exit prompt -->
+    <string name="exit_prompt_title">Time check — %1$s</string>
+    <string name="exit_prompt_body_simple">You planned %1$s. Want to stop here?</string>
+    <string name="exit_prompt_body_stats">You planned %1$s and you are %2$s past it. Want to stop here?</string>
+    <string name="action_done">I\'m done</string>
+    <string name="action_extend">+5 min</string>
+    <string name="action_keep_watching">Keep watching</string>
+
+    <!-- Outcomes dashboard -->
+    <string name="outcomes_title">Intention &amp; outcomes</string>
+    <string name="outcomes_back">Back</string>
+    <string name="outcomes_plan_session">Plan a session</string>
+    <string name="outcomes_active_intention">Active intention</string>
+    <string name="outcomes_no_active_intention">No active session. Plan one before you open a feed.</string>
+    <string name="outcomes_intention_progress">%1$s used of your planned %2$s</string>
+    <string name="outcomes_goal_heading">Your outcome goal</string>
+    <string name="outcomes_goal_current">Daily tracked usage goal: %1$s</string>
+    <string name="outcomes_goal_unset">No daily goal set yet — pick one so progress can be measured.</string>
+    <string name="outcomes_goal_none">No goal</string>
+    <string name="outcomes_report_heading">Did interventions help?</string>
+    <string name="outcomes_goal_attainment">Days meeting your goal</string>
+    <string name="outcomes_adherence">Sessions ended on plan</string>
+    <string name="outcomes_trend">Daily usage trend</string>
+    <string name="outcomes_behaviour_mix">Behaviour mix</string>
+    <string name="outcomes_interventions">Exit prompts</string>
+    <string name="outcomes_experiment">Prompt experiment</string>
+    <string name="outcomes_patterns_heading">Usage patterns (today)</string>
+    <string name="outcomes_patterns_needs_access">Usage access lets Lowpapin show app open counts and foreground time for pattern analysis.</string>
+    <string name="outcomes_grant_usage_access">Grant usage access</string>
+    <string name="outcomes_patterns_empty">No tracked app usage recorded today.</string>
+    <string name="outcomes_pattern_value">%1$s · %2$d opens</string>
+    <string name="outcomes_fraction">%1$d of %2$d (%3$d%%)</string>
+    <string name="outcomes_trend_value">%1$s %2$s vs previous week</string>
+    <string name="outcomes_trend_down">down</string>
+    <string name="outcomes_trend_up">up</string>
+    <string name="outcomes_mix_value">%1$d%% intentional · %2$d%% uncertain · %3$d%% compulsive</string>
+    <string name="outcomes_interventions_value">%1$d delivered · %2$d kept watching</string>
+    <string name="outcomes_experiment_value">Simple: %1$d%% on plan (n=%2$d) · Stats: %3$d%% on plan (n=%4$d)</string>
+
+    <string name="duration_minutes_short">%1$d min</string>
 </resources>

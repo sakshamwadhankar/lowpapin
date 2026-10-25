@@ -18,6 +18,16 @@
 <manifest xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Interventions (intention requests and exit prompts) are delivered as notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Heads-up/full-screen intention capture when a tracked app is opened. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Optional usage-pattern analysis (app open counts, foreground time). Special access
+         granted by the user in system settings; the app degrades gracefully without it. -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:name=".LowpapinApplication"
         android:allowBackup="true"
@@ -50,5 +60,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="com.lowpapin.app.intention.IntentCaptureActivity"
+            android:theme="@style/Theme.Lowpapin.Translucent"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:showWhenLocked="false" />
+
+        <receiver
+            android:name="com.lowpapin.app.intention.InterventionActionReceiver"
+            android:exported="false" />
     </application>
 </manifest>

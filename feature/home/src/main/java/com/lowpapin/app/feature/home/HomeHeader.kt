@@ -75,6 +75,7 @@ internal fun UsageOverviewHeader(
     onUsageAnalyticsTodaySelected: () -> Unit,
     onHelpClicked: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToOutcomes: () -> Unit,
 ) {
     val isViewingToday = analytics.selectedDate == analytics.today
 
@@ -114,6 +115,10 @@ internal fun UsageOverviewHeader(
                     .padding(end = MaterialTheme.spacing.small),
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
             ) {
+                OutcomesButton(
+                    onClick = onNavigateToOutcomes,
+                )
+
                 HelpButton(
                     onClick = onHelpClicked,
                 )

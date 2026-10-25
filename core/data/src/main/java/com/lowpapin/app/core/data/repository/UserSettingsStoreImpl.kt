@@ -55,6 +55,7 @@ class UserSettingsStoreImpl @Inject constructor(private val userSettingsDao: Use
     private val _allowVideosSentByDm = MutableStateFlow(false)
     private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
     private val _dynamicColorEnabled = MutableStateFlow(true)
+    private val _dailyGoalMillis = MutableStateFlow(0L)
 
     init {
         coroutineScope.launch {
@@ -101,6 +102,9 @@ class UserSettingsStoreImpl @Inject constructor(private val userSettingsDao: Use
         }
         coroutineScope.launch {
             userSettingsDao.getDynamicColorEnabled().collect { _dynamicColorEnabled.value = it }
+        }
+        coroutineScope.launch {
+            userSettingsDao.getDailyGoalMillis().collect { _dailyGoalMillis.value = it }
         }
     }
 
@@ -210,5 +214,12 @@ class UserSettingsStoreImpl @Inject constructor(private val userSettingsDao: Use
     override suspend fun setDynamicColorEnabled(enabled: Boolean) {
         _dynamicColorEnabled.value = enabled
         userSettingsDao.setDynamicColorEnabled(enabled)
+    }
+
+    override fun getDailyGoalMillis(): Flow<Long> = _dailyGoalMillis
+
+    override suspend fun setDailyGoalMillis(goalMillis: Long) {
+        _dailyGoalMillis.value = goalMillis
+        userSettingsDao.setDailyGoalMillis(goalMillis)
     }
 }

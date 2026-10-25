@@ -61,6 +61,7 @@ private val DEFAULT_INTERVAL_ALLOWANCE_MILLIS = TimeUnit.MINUTES.toMillis(5)
 fun HomeScreen(
     modifier: Modifier = Modifier,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToOutcomes: () -> Unit = {},
     accessibilityServiceClass: Class<out AccessibilityService>? = null,
     onRequestAppReview: (Activity, (ReviewPromptResult) -> Unit) -> Unit = { _, onResult ->
         onResult(ReviewPromptResult.SkippedPermanent)
@@ -138,6 +139,7 @@ fun HomeScreen(
             modifier = modifier,
             uiState = uiState,
             onNavigateToSettings = onNavigateToSettings,
+            onNavigateToOutcomes = onNavigateToOutcomes,
             onBlockOptionSelected = { blockOption ->
                 val shouldBypass = BuildConfig.DEBUG && debugBypassAccessibilityCheck
                 if (shouldBypass || context.isAccessibilityServiceEnabled(accessibilityServiceClass)) {

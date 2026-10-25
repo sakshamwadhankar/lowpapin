@@ -60,6 +60,7 @@ data class UserSettingsEntity(
     @ColumnInfo(name = "except_reels_sent_by_dm", defaultValue = "0") val allowVideosSentByDm: Boolean = false,
     @ColumnInfo(name = "theme_mode", defaultValue = "SYSTEM") val themeMode: ThemeMode = ThemeMode.SYSTEM,
     @ColumnInfo(name = "dynamic_color_enabled", defaultValue = "1") val dynamicColorEnabled: Boolean = true,
+    @ColumnInfo(name = "daily_goal_millis", defaultValue = "0") val dailyGoalMillis: Long = 0L,
 )
 
 fun UserSettingsEntity.toBlockingConfig(): BlockingConfig = BlockingConfig(

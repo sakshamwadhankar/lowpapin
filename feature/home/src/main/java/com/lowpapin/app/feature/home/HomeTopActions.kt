@@ -31,6 +31,23 @@ import com.lowpapin.app.designsystem.theme.SETTINGS_TRANSITION_KEY
 import com.lowpapin.app.designsystem.util.rememberHapticHelper
 
 @Composable
+fun OutcomesButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val hapticHelper = rememberHapticHelper()
+    FilledTonalIconButton(
+        onClick = {
+            hapticHelper.playClick()
+            onClick()
+        },
+        modifier = modifier,
+    ) {
+        Icon(
+            painter = painterResource(id = LowpapinIcons.Schedule),
+            contentDescription = stringResource(R.string.outcomes),
+        )
+    }
+}
+
+@Composable
 fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val hapticHelper = rememberHapticHelper()
     FilledTonalIconButton(

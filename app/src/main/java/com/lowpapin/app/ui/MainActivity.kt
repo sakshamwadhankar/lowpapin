@@ -16,6 +16,7 @@
  */
 package com.lowpapin.app.ui
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +27,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
@@ -37,9 +40,11 @@ import com.lowpapin.app.designsystem.theme.LocalSharedTransitionScope
 import com.lowpapin.app.designsystem.theme.LowpapinTheme
 import com.lowpapin.app.feature.home.HomeScreen
 import com.lowpapin.app.feature.settings.SettingsScreen
+import com.lowpapin.app.outcomes.OutcomesScreen
 import com.lowpapin.app.util.requestAppReview
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import android.Manifest
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -51,6 +56,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        requestNotificationPermissionIfNeeded()
 
         setContent {
 
@@ -72,6 +79,7 @@ class MainActivity : ComponentActivity() {
                                 entry<LowpapinRoute.Home> {
                                     HomeScreen(
                                         onNavigateToSettings = appState::navigateToSettings,
+                                        onNavigateToOutcomes = appState::navigateToOutcomes,
                                         accessibilityServiceClass = LowpapinBlockAccessibilityService::class.java,
                                         onRequestAppReview = ::requestAppReview,
                                         forceLegacyOverlay = forceLegacyOverlay,
@@ -85,12 +93,35 @@ class MainActivity : ComponentActivity() {
                                         onNavigateBack = appState::navigateBack,
                                     )
                                 }
+                                entry<LowpapinRoute.Outcomes> {
+                                    OutcomesScreen(
+                                        onNavigateBack = appState::navigateBack,
+                                    )
+                                }
                             },
                         )
                     }
                 }
             }
         }
+    }
+
+    /** Interventions are delivered as notifications; ask once so heads-up prompts can appear. */
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_POST_NOTIFICATIONS,
+            )
+        }
+    }
+
+    private companion object {
+        const val REQUEST_POST_NOTIFICATIONS = 4001
     }
 }
 

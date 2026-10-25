@@ -68,6 +68,7 @@ internal fun HomeContent(
     uiState: HomeUiState,
     modifier: Modifier = Modifier,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToOutcomes: () -> Unit = {},
     onBlockOptionSelected: (BlockOption) -> Unit,
     onConfigureDailyLimit: () -> Unit,
     onHelpClicked: () -> Unit,
@@ -161,6 +162,7 @@ internal fun HomeContent(
                     sessionChunksExpanded = sessionChunksExpanded,
                     onToggleSessionChunks = { sessionChunksExpanded = !sessionChunksExpanded },
                     onNavigateToSettings = onNavigateToSettings,
+                    onNavigateToOutcomes = onNavigateToOutcomes,
                     onBlockOptionSelected = onBlockOptionSelected,
                     onConfigureDailyLimit = onConfigureDailyLimit,
                     onHelpClicked = onHelpClicked,
@@ -192,6 +194,7 @@ internal fun HomeContent(
                         onUsageAnalyticsTodaySelected = onUsageAnalyticsTodaySelected,
                         onHelpClicked = onHelpClicked,
                         onNavigateToSettings = onNavigateToSettings,
+                        onNavigateToOutcomes = onNavigateToOutcomes,
                     )
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -254,6 +257,7 @@ private fun HomeWidePanes(
     sessionChunksExpanded: Boolean,
     onToggleSessionChunks: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToOutcomes: () -> Unit,
     onBlockOptionSelected: (BlockOption) -> Unit,
     onConfigureDailyLimit: () -> Unit,
     onHelpClicked: () -> Unit,
@@ -289,6 +293,7 @@ private fun HomeWidePanes(
                 onUsageAnalyticsTodaySelected = onUsageAnalyticsTodaySelected,
                 onHelpClicked = onHelpClicked,
                 onNavigateToSettings = onNavigateToSettings,
+                onNavigateToOutcomes = onNavigateToOutcomes,
             )
             if (analyticsSelectedIsToday) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))

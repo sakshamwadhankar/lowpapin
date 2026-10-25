@@ -70,6 +70,13 @@ interface UserSettingsStore {
     suspend fun setReviewPromptAttemptCount(count: Int)
     fun getReviewPromptLastAttemptAt(): Flow<Long>
     suspend fun setReviewPromptLastAttemptAt(timestamp: Long)
+
+    /**
+     * The user's own outcome goal for daily tracked usage. 0 when no goal is set. Interventions
+     * are measured against this, never against a hard ceiling.
+     */
+    fun getDailyGoalMillis(): Flow<Long>
+    suspend fun setDailyGoalMillis(goalMillis: Long)
 }
 
 suspend fun UserSettingsStore.setTimerOverlayPosition(positionX: Int, positionY: Int) {

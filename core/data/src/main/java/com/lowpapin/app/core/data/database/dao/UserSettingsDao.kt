@@ -154,4 +154,10 @@ abstract class UserSettingsDao : BaseDao<UserSettingsEntity> {
 
     @Query("UPDATE user_settings SET dynamic_color_enabled = :enabled WHERE id = 1")
     abstract suspend fun setDynamicColorEnabled(enabled: Boolean)
+
+    @Query("SELECT daily_goal_millis FROM user_settings WHERE id = 1")
+    abstract fun getDailyGoalMillis(): Flow<Long>
+
+    @Query("UPDATE user_settings SET daily_goal_millis = :goalMillis WHERE id = 1")
+    abstract suspend fun setDailyGoalMillis(goalMillis: Long)
 }
