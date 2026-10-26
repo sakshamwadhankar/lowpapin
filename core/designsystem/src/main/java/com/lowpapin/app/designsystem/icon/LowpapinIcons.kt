@@ -61,6 +61,9 @@ object LowpapinIcons {
     val Help = R.drawable.ic_help
 
     @DrawableRes
+    val Group = R.drawable.ic_group
+
+    @DrawableRes
     val Info = R.drawable.ic_info
 
     @DrawableRes

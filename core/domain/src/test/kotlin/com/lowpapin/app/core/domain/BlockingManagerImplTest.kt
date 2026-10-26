@@ -91,6 +91,7 @@ class BlockingManagerImplTest {
 
     private class FakeSessionTracker(private val dailyUsageMillis: Long) : SessionTracker {
         override suspend fun getDailyUsage(): Long = dailyUsageMillis
+        override suspend fun getDailyUsage(app: BlockableApp): Long = dailyUsageMillis
         override suspend fun addToDailyUsage(sessionTime: Long, app: BlockableApp) = Unit
         override fun onAppOpen(app: BlockableApp) = Unit
         override fun onAppClose() = Unit

@@ -38,23 +38,30 @@ import com.lowpapin.app.core.blocking.time.SystemTimeProvider
 import com.lowpapin.app.core.blocking.time.TimeProvider
 import com.lowpapin.app.core.data.database.LowpapinDatabase
 import com.lowpapin.app.core.data.database.dao.InterventionEventDao
+import com.lowpapin.app.core.data.database.dao.AccountabilityLimitDao
 import com.lowpapin.app.core.data.database.dao.SessionIntentDao
 import com.lowpapin.app.core.data.database.dao.SessionSegmentDao
 import com.lowpapin.app.core.data.database.dao.UserSettingsDao
 import com.lowpapin.app.core.data.repository.BlockingConfigRepositoryImpl
 import com.lowpapin.app.core.data.repository.InterventionLogRepositoryImpl
+import com.lowpapin.app.core.data.repository.AccountabilityLimitStoreImpl
 import com.lowpapin.app.core.data.repository.SessionIntentionRepositoryImpl
 import com.lowpapin.app.core.data.repository.SessionSegmentStoreImpl
 import com.lowpapin.app.core.data.repository.SessionTrackerImpl
 import com.lowpapin.app.core.data.repository.UsagePatternsRepositoryImpl
 import com.lowpapin.app.core.data.repository.UserSettingsStoreImpl
+import com.lowpapin.app.core.data.social.SupabaseConfig
+import com.lowpapin.app.core.data.social.SupabaseClientProvider
+import com.lowpapin.app.core.data.social.SupabaseSocialDataSource
 import com.lowpapin.app.core.repository.BlockingConfigRepository
 import com.lowpapin.app.core.repository.InterventionLogRepository
+import com.lowpapin.app.core.repository.AccountabilityLimitStore
 import com.lowpapin.app.core.repository.SessionIntentionRepository
 import com.lowpapin.app.core.repository.SessionSegmentStore
 import com.lowpapin.app.core.repository.SessionTracker
 import com.lowpapin.app.core.repository.UsagePatternsRepository
 import com.lowpapin.app.core.repository.UserSettingsStore
+import com.lowpapin.app.core.repository.SocialRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,6 +72,21 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataDiModule {
+
+    @Provides
+    @Singleton
+    fun provideSupabaseConfig(): SupabaseConfig = SupabaseConfig(
+        url = com.lowpapin.app.core.data.BuildConfig.SUPABASE_URL,
+        publishableKey = com.lowpapin.app.core.data.BuildConfig.SUPABASE_PUBLISHABLE_KEY,
+    )
+
+    @Provides
+    @Singleton
+    fun provideSupabaseClientProvider(config: SupabaseConfig): SupabaseClientProvider = SupabaseClientProvider(config)
+
+    @Provides
+    @Singleton
+    fun provideSocialRepository(dataSource: SupabaseSocialDataSource): SocialRepository = dataSource
 
     @Provides
     @Singleton
@@ -81,6 +103,7 @@ object DataDiModule {
                 LowpapinDatabase.MIGRATION_10_11,
                 LowpapinDatabase.MIGRATION_11_12,
                 LowpapinDatabase.MIGRATION_12_13,
+                LowpapinDatabase.MIGRATION_13_14,
             ).fallbackToDestructiveMigration(true) // Not recommended but for now it shouldn't matter
             .fallbackToDestructiveMigrationOnDowngrade(true).addCallback(
                 object : RoomDatabase.Callback() {
@@ -145,6 +168,15 @@ object DataDiModule {
     @Provides
     @Singleton
     fun provideInterventionEventDao(database: LowpapinDatabase): InterventionEventDao = database.interventionEventDao()
+
+    @Provides
+    @Singleton
+    fun provideAccountabilityLimitDao(database: LowpapinDatabase): AccountabilityLimitDao = database.accountabilityLimitDao()
+
+    @Provides
+    @Singleton
+    fun provideAccountabilityLimitStore(dao: AccountabilityLimitDao): AccountabilityLimitStore =
+        AccountabilityLimitStoreImpl(dao)
 
     @Provides
     @Singleton

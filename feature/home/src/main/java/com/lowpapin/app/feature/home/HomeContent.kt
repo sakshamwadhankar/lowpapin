@@ -69,6 +69,7 @@ internal fun HomeContent(
     modifier: Modifier = Modifier,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToOutcomes: () -> Unit = {},
+    onNavigateToSocial: () -> Unit = {},
     onBlockOptionSelected: (BlockOption) -> Unit,
     onConfigureDailyLimit: () -> Unit,
     onHelpClicked: () -> Unit,
@@ -163,6 +164,7 @@ internal fun HomeContent(
                     onToggleSessionChunks = { sessionChunksExpanded = !sessionChunksExpanded },
                     onNavigateToSettings = onNavigateToSettings,
                     onNavigateToOutcomes = onNavigateToOutcomes,
+                    onNavigateToSocial = onNavigateToSocial,
                     onBlockOptionSelected = onBlockOptionSelected,
                     onConfigureDailyLimit = onConfigureDailyLimit,
                     onHelpClicked = onHelpClicked,
@@ -195,6 +197,7 @@ internal fun HomeContent(
                         onHelpClicked = onHelpClicked,
                         onNavigateToSettings = onNavigateToSettings,
                         onNavigateToOutcomes = onNavigateToOutcomes,
+                        onNavigateToSocial = onNavigateToSocial,
                     )
 
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
@@ -258,6 +261,7 @@ private fun HomeWidePanes(
     onToggleSessionChunks: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToOutcomes: () -> Unit,
+    onNavigateToSocial: () -> Unit,
     onBlockOptionSelected: (BlockOption) -> Unit,
     onConfigureDailyLimit: () -> Unit,
     onHelpClicked: () -> Unit,
@@ -294,6 +298,7 @@ private fun HomeWidePanes(
                 onHelpClicked = onHelpClicked,
                 onNavigateToSettings = onNavigateToSettings,
                 onNavigateToOutcomes = onNavigateToOutcomes,
+                onNavigateToSocial = onNavigateToSocial,
             )
             if (analyticsSelectedIsToday) {
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))

@@ -32,8 +32,10 @@ import com.lowpapin.app.core.model.BlockingConfig
 import com.lowpapin.app.core.model.BlockingResult
 import com.lowpapin.app.core.model.ContentBlockAction
 import com.lowpapin.app.core.model.ResolvedBlockableApp
+import com.lowpapin.app.core.repository.AccountabilityLimitStore
 import com.lowpapin.app.core.repository.BlockingConfigRepository
 import com.lowpapin.app.core.repository.SessionTracker
+import com.lowpapin.app.core.repository.SocialRepository
 import com.lowpapin.app.core.repository.UserSettingsStore
 import com.lowpapin.app.debug.DebugOverlayConfig
 import com.lowpapin.app.intention.SessionIntentionManager
@@ -113,6 +115,14 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     @Inject
     lateinit var sessionTracker: SessionTracker
 
+    /** Local cache of an approved friend-controlled Instagram limit. */
+    @Inject
+    lateinit var accountabilityLimitStore: AccountabilityLimitStore
+
+    /** Supabase-backed social repository used to refresh the local accountability limit. */
+    @Inject
+    lateinit var socialRepository: SocialRepository
+
     /** Evaluates blocking rules and decides when to block or allow content. */
     @Inject
     lateinit var blockingManager: BlockingManager
@@ -185,6 +195,10 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     /** Currently tracked target app in the foreground, or null if unrelated. */
     private var currentForegroundBrainRotApp: ResolvedBlockableApp? = null
 
+    /** The cached Instagram-only limit set by an approved accountability partner. */
+    @Volatile
+    private var currentRemoteInstagramLimitMillis: Long? = null
+
     /** Last activity reported by a screen-change event; ordinary view events leave it unchanged. */
     private var currentActivity: ComponentName? = null
 
@@ -203,18 +217,24 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         val session = viewingSession ?: return@Runnable
         val elapsed = System.currentTimeMillis() - session.startedAtMillis
 
-        if (isBlockingSuppressed) {
-            // While paused or suppressed, continue scheduling so usage and timer overlay stay current.
-            Timber.v(
-                "Periodic check skipped: elapsed=%d ms, paused=%b, suppressed=%b",
-                elapsed,
-                isPauseActive(),
-                session.blockingSuppressed,
-            )
-            mainHandler.postDelayed(videoCheckRunnable, 1000)
-        } else {
-            Timber.v("Periodic check running: elapsed=%d ms", elapsed)
-            serviceScope.launch {
+        serviceScope.launch {
+            if (isRemoteInstagramLimitReached(session, elapsed)) {
+                Timber.i("Remote Instagram accountability limit reached (elapsed=%d)", elapsed)
+                enforceBlocking(session, force = true)
+                return@launch
+            }
+
+            if (isBlockingSuppressed) {
+                // While paused or suppressed, continue scheduling so usage and timer overlay stay current.
+                Timber.v(
+                    "Periodic check skipped: elapsed=%d ms, paused=%b, suppressed=%b",
+                    elapsed,
+                    isPauseActive(),
+                    session.blockingSuppressed,
+                )
+                mainHandler.postDelayed(videoCheckRunnable, 1000)
+            } else {
+                Timber.v("Periodic check running: elapsed=%d ms", elapsed)
                 // The intention layer runs alongside configured blocking modes: it never blocks,
                 // it offers exit prompts when usage diverges from the declared intention.
                 sessionIntentionManager.evaluateOverrun(session.app.app)
@@ -240,6 +260,14 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         }
     }
 
+    /** Refreshes remote friend-controlled rules without doing network work for every event. */
+    private val remoteLimitRefreshRunnable: Runnable = Runnable {
+        serviceScope.launch {
+            socialRepository.refreshRemoteLimit()
+            mainHandler.postDelayed(remoteLimitRefreshRunnable, REMOTE_LIMIT_REFRESH_INTERVAL_MILLIS)
+        }
+    }
+
     /**
      * Called when the accessibility service connects and is ready to monitor apps.
      * Sets up package listeners and begins observing settings and blocking preferences.
@@ -250,6 +278,16 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
 
         // Start with restricted configuration to save battery
         refreshServiceConfig()
+
+        serviceScope.launch {
+            accountabilityLimitStore.observeActiveLimit().collect { limit ->
+                currentRemoteInstagramLimitMillis = limit?.dailyLimitMillis
+                reconsiderVisibleContent()
+            }
+        }
+        serviceScope.launch { socialRepository.refreshRemoteLimit() }
+        mainHandler.removeCallbacks(remoteLimitRefreshRunnable)
+        mainHandler.postDelayed(remoteLimitRefreshRunnable, REMOTE_LIMIT_REFRESH_INTERVAL_MILLIS)
 
         // The user may have just enabled accessibility in Android Settings; bring them back once.
         serviceScope.launch {
@@ -445,6 +483,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         )
         stopPeriodicCheck()
         mainHandler.removeCallbacks(coveredContentCheck)
+        mainHandler.removeCallbacks(remoteLimitRefreshRunnable)
         blockedContentOverlayManager.hide()
         timerOverlayManager.cleanup()
         serviceScope.cancel()
@@ -495,11 +534,12 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
             val dailyUsageMillis = sessionTracker.getDailyUsage()
             // Share this usage reading with the timer, including during a pause or DM exemption.
             val shouldBlock = blockingManager.onEnterBlockedContent(dailyUsageMillis)
+            val remoteLimitReached = isRemoteInstagramLimitReached(session, elapsedMillis = 0L)
             // Reading the limit may take time. Ignore the answer if the user has already left.
             if (viewingSession !== session) return@launch
-            if (!isBlockingSuppressed && shouldBlock) {
+            if (remoteLimitReached || (!isBlockingSuppressed && shouldBlock)) {
                 Timber.i("Blocking on enter")
-                enforceBlocking(session)
+                enforceBlocking(session, force = remoteLimitReached)
                 return@launch
             }
 
@@ -612,8 +652,8 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
     }
 
     /** Enforces the active blocking policy by attaching a cover overlay or performing Back navigation. */
-    private suspend fun enforceBlocking(session: ContentSession) {
-        if (viewingSession !== session || isBlockingSuppressed) return
+    private suspend fun enforceBlocking(session: ContentSession, force: Boolean = false) {
+        if (viewingSession !== session || (isBlockingSuppressed && !force)) return
         sessionIntentionManager.onHardBlock(session.app.app)
         when (val action = session.content.blockAction) {
             is ContentBlockAction.PerformGlobalAction -> performGlobalAction(action.action)
@@ -685,15 +725,16 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
         }
         serviceScope.launch {
             if (!current.isCovered) {
-                if (!isBlockingSuppressed &&
-                    blockingManager.onPeriodicCheck(System.currentTimeMillis() - current.startedAtMillis) == BlockingResult.BlockNow
-                ) {
-                    enforceBlocking(current)
+                val elapsed = System.currentTimeMillis() - current.startedAtMillis
+                val remoteLimitReached = isRemoteInstagramLimitReached(current, elapsed)
+                if (remoteLimitReached || (!isBlockingSuppressed && blockingManager.onPeriodicCheck(elapsed) == BlockingResult.BlockNow)) {
+                    enforceBlocking(current, force = remoteLimitReached)
                 }
             } else {
                 // Query blocking policy without starting a viewing session or recording usage prematurely.
                 val shouldBlock = blockingManager.shouldBlockContent()
-                if (contentSession !== current || (shouldBlock && !isBlockingSuppressed)) {
+                val remoteLimitReached = isRemoteInstagramLimitReached(current, elapsedMillis = 0L)
+                if (contentSession !== current || ((shouldBlock && !isBlockingSuppressed) || remoteLimitReached)) {
                     scheduleCoveredContentCheck()
                     return@launch
                 }
@@ -704,6 +745,14 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
                 onBlockedContentEntered()
             }
         }
+    }
+
+    /** Checks the friend-controlled Instagram rule against Instagram usage only. */
+    private suspend fun isRemoteInstagramLimitReached(session: ContentSession, elapsedMillis: Long): Boolean {
+        val limitMillis = currentRemoteInstagramLimitMillis ?: return false
+        if (session.app.app != BlockableApp.REELS) return false
+        val usedMillis = sessionTracker.getDailyUsage(BlockableApp.REELS) + elapsedMillis
+        return usedMillis >= limitMillis
     }
 
     /**
@@ -749,5 +798,7 @@ class LowpapinBlockAccessibilityService : AccessibilityService() {
 
         /** Minimum viewing duration required to record usage. Sub-second visits (like immediate blocks) are ignored. */
         const val MIN_TRACKED_DURATION_MILLIS = 1_000L
+
+        const val REMOTE_LIMIT_REFRESH_INTERVAL_MILLIS = 15 * 60 * 1000L
     }
 }

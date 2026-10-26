@@ -48,6 +48,23 @@ fun OutcomesButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun SocialButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val hapticHelper = rememberHapticHelper()
+    FilledTonalIconButton(
+        onClick = {
+            hapticHelper.playClick()
+            onClick()
+        },
+        modifier = modifier,
+    ) {
+        Icon(
+            painter = painterResource(id = LowpapinIcons.Group),
+            contentDescription = stringResource(R.string.social_title),
+        )
+    }
+}
+
+@Composable
 fun HelpButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val hapticHelper = rememberHapticHelper()
     FilledTonalIconButton(

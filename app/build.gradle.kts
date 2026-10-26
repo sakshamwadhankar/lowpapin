@@ -174,6 +174,7 @@ dependencies {
     implementation(projects.core.logging)
     implementation(projects.feature.home)
     implementation(projects.feature.settings)
+    implementation(projects.feature.social)
 
     coreLibraryDesugaring(libs.core.jdk.desugaring)
 }

@@ -52,5 +52,6 @@ include(
     ":core:logging",
     ":feature:home",
     ":feature:settings",
+    ":feature:social",
 )
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

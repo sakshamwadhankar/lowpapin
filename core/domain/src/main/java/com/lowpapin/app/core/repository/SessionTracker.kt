@@ -25,6 +25,9 @@ interface SessionTracker {
      */
     suspend fun getDailyUsage(): Long
 
+    /** Get today's usage for one supported app. */
+    suspend fun getDailyUsage(app: BlockableApp): Long
+
     /**
      * Add session time to daily usage and persist immediately.
      * Also updates per-app usage when app is provided.

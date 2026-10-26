@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (C) 2026 Lowpapin
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="social_title">Squad</string>
+    <string name="social_back">Back</string>
+    <string name="social_not_configured_title">Multiplayer is almost ready</string>
+    <string name="social_not_configured_body">Add your Supabase URL and publishable key when building the app, then run the social migration from the supabase folder.</string>
+    <string name="social_sign_in">Sign in</string>
+    <string name="social_sign_up">Create account</string>
+    <string name="social_email">Email</string>
+    <string name="social_password">Password</string>
+    <string name="social_username">Username</string>
+    <string name="social_username_hint">e.g. focusfriend</string>
+    <string name="social_continue">Continue</string>
+    <string name="social_switch_to_sign_up">New here? Create an account</string>
+    <string name="social_switch_to_sign_in">Already have an account? Sign in</string>
+    <string name="social_confirm_email">Check your email if confirmation is enabled, then sign in.</string>
+    <string name="social_my_streak">Your streak</string>
+    <string name="social_days">%1$d days</string>
+    <string name="social_best_streak">Best: %1$d days</string>
+    <string name="social_add_friend">Add a friend</string>
+    <string name="social_friend_username">Friend username</string>
+    <string name="social_send_request">Send request</string>
+    <string name="social_friend_requests">Friend requests</string>
+    <string name="social_accept">Accept</string>
+    <string name="social_decline">Decline</string>
+    <string name="social_friends">Friends</string>
+    <string name="social_no_friends">No friends yet. Add someone to start your squad.</string>
+    <string name="social_today_done">Checked in today</string>
+    <string name="social_today_not_done">Not checked in today</string>
+    <string name="social_permission_request">Ask to manage Instagram limit</string>
+    <string name="social_permission_pending">Waiting for permission</string>
+    <string name="social_permission_active">Accountability permission active</string>
+    <string name="social_set_limit">Set Instagram limit</string>
+    <string name="social_limit_minutes">Daily Instagram minutes</string>
+    <string name="social_save_limit">Save limit</string>
+    <string name="social_permission_requests">Accountability requests</string>
+    <string name="social_permission_request_body">%1$s wants permission to set your Instagram limit.</string>
+    <string name="social_sign_out">Sign out</string>
+    <string name="social_error">%1$s</string>
+    <string name="social_setup_required">Configure Supabase to use Squad.</string>
+</resources>

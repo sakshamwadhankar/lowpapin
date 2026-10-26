@@ -31,6 +31,17 @@
 */
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+fun String.asBuildConfigString(): String = "\"${replace("\\", "\\\\").replace("\"", "\\\"")}\""
+
+val supabaseUrl = providers.gradleProperty("supabaseUrl")
+    .orElse(providers.environmentVariable("SUPABASE_URL"))
+    .orElse("")
+    .get()
+val supabasePublishableKey = providers.gradleProperty("supabasePublishableKey")
+    .orElse(providers.environmentVariable("SUPABASE_PUBLISHABLE_KEY"))
+    .orElse("")
+    .get()
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.ksp)
@@ -52,6 +63,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "SUPABASE_URL", supabaseUrl.asBuildConfigString())
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", supabasePublishableKey.asBuildConfigString())
     }
 
     buildFeatures {
@@ -112,4 +125,10 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(testFixtures(projects.core.domain))
+
+    // Supabase multiplayer backend
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.auth)
+    implementation(libs.supabase.postgrest)
+    implementation(libs.ktor.client.android)
 }

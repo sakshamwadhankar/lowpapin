@@ -29,6 +29,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
 @Singleton
@@ -45,6 +46,13 @@ class SessionTrackerImpl @Inject constructor(
     private val sessionState = AtomicReference(SessionState(sessionStartLocalDate = timeProvider.localDateNow()))
 
     override suspend fun getDailyUsage(): Long = sessionSegmentStore.getTodayTotalDurationSnapshot()
+
+    override suspend fun getDailyUsage(app: BlockableApp): Long {
+        val today = timeProvider.localDateNow()
+        return sessionSegmentStore.getListSessionSegments(today).first()
+            .filter { it.app == app }
+            .sumOf { it.durationMillis.coerceAtLeast(0L) }
+    }
 
     override suspend fun addToDailyUsage(sessionTime: Long, app: BlockableApp) {
         usageMutex.withLock {

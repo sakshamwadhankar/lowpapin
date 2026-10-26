@@ -38,6 +38,8 @@ spotless = "8.8.0"
 # @keep
 targetSdk = "37"
 timber = "5.0.1"
+supabase = "3.8.0"
+ktor = "3.3.3"
 version-catalog-update = "1.1.0"
 
 [libraries]
@@ -88,6 +90,10 @@ sheets-core = { module = "com.maxkeppeler.sheets-compose-dialogs:core", version.
 sheets-duration = { module = "com.maxkeppeler.sheets-compose-dialogs:duration", version.ref = "sheets" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
+supabase-auth = { module = "io.github.jan-tennert.supabase:auth-kt" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

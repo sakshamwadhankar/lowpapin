@@ -22,10 +22,12 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lowpapin.app.core.data.database.dao.InterventionEventDao
+import com.lowpapin.app.core.data.database.dao.AccountabilityLimitDao
 import com.lowpapin.app.core.data.database.dao.SessionIntentDao
 import com.lowpapin.app.core.data.database.dao.SessionSegmentDao
 import com.lowpapin.app.core.data.database.dao.UserSettingsDao
 import com.lowpapin.app.core.data.database.model.InterventionEventEntity
+import com.lowpapin.app.core.data.database.model.AccountabilityLimitEntity
 import com.lowpapin.app.core.data.database.model.SessionIntentEntity
 import com.lowpapin.app.core.data.database.model.SessionSegmentEntity
 import com.lowpapin.app.core.data.database.model.UserSettingsEntity
@@ -39,8 +41,9 @@ import com.lowpapin.app.core.data.database.model.UserSettingsEntity
         SessionSegmentEntity::class,
         SessionIntentEntity::class,
         InterventionEventEntity::class,
+        AccountabilityLimitEntity::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = false,
 )
 @TypeConverters(LocalDateTypeConverters::class, BlockableAppTypeConverters::class, LocalDateTimeTypeConverters::class)
@@ -52,6 +55,8 @@ abstract class LowpapinDatabase : RoomDatabase() {
     abstract fun sessionIntentDao(): SessionIntentDao
 
     abstract fun interventionEventDao(): InterventionEventDao
+
+    abstract fun accountabilityLimitDao(): AccountabilityLimitDao
 
     companion object {
         val MIGRATION_2_3 = object : Migration(2, 3) {
@@ -381,6 +386,23 @@ abstract class LowpapinDatabase : RoomDatabase() {
                     "CREATE INDEX IF NOT EXISTS index_intervention_events_intentId ON intervention_events (intentId)",
                 )
                 db.execSQL("ALTER TABLE user_settings ADD COLUMN daily_goal_millis INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS accountability_limits (
+                        id INTEGER NOT NULL,
+                        permissionId TEXT NOT NULL,
+                        dailyLimitMillis INTEGER NOT NULL,
+                        sponsorId TEXT NOT NULL,
+                        updatedAtMillis INTEGER NOT NULL,
+                        PRIMARY KEY(id)
+                    )
+                    """.trimIndent(),
+                )
             }
         }
     }

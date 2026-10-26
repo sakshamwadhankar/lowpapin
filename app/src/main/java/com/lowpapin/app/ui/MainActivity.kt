@@ -40,6 +40,7 @@ import com.lowpapin.app.designsystem.theme.LocalSharedTransitionScope
 import com.lowpapin.app.designsystem.theme.LowpapinTheme
 import com.lowpapin.app.feature.home.HomeScreen
 import com.lowpapin.app.feature.settings.SettingsScreen
+import com.lowpapin.app.feature.social.SocialScreen
 import com.lowpapin.app.outcomes.OutcomesScreen
 import com.lowpapin.app.util.requestAppReview
 import dagger.hilt.android.AndroidEntryPoint
@@ -80,6 +81,7 @@ class MainActivity : ComponentActivity() {
                                     HomeScreen(
                                         onNavigateToSettings = appState::navigateToSettings,
                                         onNavigateToOutcomes = appState::navigateToOutcomes,
+                                        onNavigateToSocial = appState::navigateToSocial,
                                         accessibilityServiceClass = LowpapinBlockAccessibilityService::class.java,
                                         onRequestAppReview = ::requestAppReview,
                                         forceLegacyOverlay = forceLegacyOverlay,
@@ -97,6 +99,9 @@ class MainActivity : ComponentActivity() {
                                     OutcomesScreen(
                                         onNavigateBack = appState::navigateBack,
                                     )
+                                }
+                                entry<LowpapinRoute.Social> {
+                                    SocialScreen(onNavigateBack = appState::navigateBack)
                                 }
                             },
                         )

@@ -62,6 +62,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToOutcomes: () -> Unit = {},
+    onNavigateToSocial: () -> Unit = {},
     accessibilityServiceClass: Class<out AccessibilityService>? = null,
     onRequestAppReview: (Activity, (ReviewPromptResult) -> Unit) -> Unit = { _, onResult ->
         onResult(ReviewPromptResult.SkippedPermanent)
@@ -140,6 +141,7 @@ fun HomeScreen(
             uiState = uiState,
             onNavigateToSettings = onNavigateToSettings,
             onNavigateToOutcomes = onNavigateToOutcomes,
+            onNavigateToSocial = onNavigateToSocial,
             onBlockOptionSelected = { blockOption ->
                 val shouldBypass = BuildConfig.DEBUG && debugBypassAccessibilityCheck
                 if (shouldBypass || context.isAccessibilityServiceEnabled(accessibilityServiceClass)) {
