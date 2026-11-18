@@ -1,4 +1,4 @@
-PLACEHOLDER_BANNER
+> 🥉 **HACKATHON — 2nd RUNNER-UP** | Organized by IIIT Nagpur.
 
 <div align="center">
 
