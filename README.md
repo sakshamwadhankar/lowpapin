@@ -1,4 +1,4 @@
-> 🥉 **HACKATHON — 2nd RUNNER-UP** | Organized by a partner college/committee.
+PLACEHOLDER_BANNER
 
 <div align="center">
 
