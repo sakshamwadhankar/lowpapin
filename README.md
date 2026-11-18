@@ -1,3 +1,5 @@
+> 🥉 **HACKATHON — 2nd RUNNER-UP** | Organized by a partner college/committee.
+
 <div align="center">
 
 <img src="art/app_logo.png" alt="Lowpapin logo — open-source anti brain-rot app for Android" height="180">
